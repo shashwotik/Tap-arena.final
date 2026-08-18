@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/*
+  Tap Legends design tokens.
+  Dark is the default, undecorated theme (per spec). Adding a `.light` class
+  to <html> overrides the underlying CSS variables below, which re-themes
+  every utility class built on them — no `light:` variants needed anywhere.
+*/
+@theme {
+  /* ---- Surfaces ---- */
+  --color-void: #030507;       /* page background */
+  --color-ink: #060b14;        /* recessed surface */
+  --color-panel: #0a1220;      /* card surface */
+  --color-panel-light: #0f1b30;/* elevated card surface */
+  --color-steel: #16233b;      /* hairlines / borders */
+  --color-circuit: #1b3a66;    /* structural mid-blue accent */
+
+  /* ---- Neon signature blue ---- */
+  --color-neon-300: #c7e6ff;
+  --color-neon-400: #8fd3ff;
+  --color-neon-500: #3fa9ff;
+  --color-neon-600: #1e7fdb;
+  --color-neon-700: #0d5fb0;
+
+  /* ---- Live / pulse accent (radar + EKG signature) ---- */
+  --color-pulse: #00e5ff;
+
+  /* ---- Text ---- */
+  --color-text: #f5f8fc;
+  --color-text-dim: #a8b7cc;
+
+  /* ---- Rank tiers ---- */
+  --color-bronze: #c9824b;
+  --color-silver: #c7d3de;
+  --color-gold: #ffd873;
+  --color-diamond: #8fe9ff;
+
+  /* ---- Signals ---- */
+  --color-win: #3ee089;
+  --color-loss: #ff5c6c;
+
+  /* ---- Type system ---- */
+  --font-display: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Rajdhani", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* ---- Glows ---- */
+  --shadow-glow-sm: 0 0 10px 0 rgba(63, 169, 255, 0.35);
+  --shadow-glow: 0 0 24px 2px rgba(63, 169, 255, 0.45), 0 0 60px 10px rgba(63, 169, 255, 0.18);
+  --shadow-glow-lg: 0 0 40px 6px rgba(63, 169, 255, 0.55), 0 0 110px 24px rgba(63, 169, 255, 0.22);
+  --shadow-glow-pulse: 0 0 18px 2px rgba(0, 229, 255, 0.65);
+
+  /* ---- Motion tokens ---- */
+  --animate-pulse-slow: pulse-slow 2.6s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 7s linear infinite;
+  --animate-spin-slower: spin-slow 16s linear infinite;
+  --animate-shimmer: shimmer 2.8s linear infinite;
+  --animate-scan: scan 3.4s ease-in-out infinite;
+  --animate-blink: blink 1s step-start infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.06); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes scan {
+  0%, 100% { transform: translateY(-110%); opacity: 0; }
+  15% { opacity: 1; }
+  50% { transform: translateY(110%); opacity: 1; }
+  65% { opacity: 0; }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Light theme: override the surface/text variables, everything else follows. */
+.light {
+  color-scheme: light;
+  --color-void: #eef3fa;
+  --color-ink: #ffffff;
+  --color-panel: #ffffff;
+  --color-panel-light: #f4f8fd;
+  --color-steel: #d3deec;
+  --color-circuit: #b9cce6;
+  --color-neon-500: #0d6fd1;
+  --color-text: #0a1220;
+  --color-text-dim: #4a5872;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  background: var(--color-void);
+  color: var(--color-text);
+  overscroll-behavior-y: none;
+}
+
+body {
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+::selection {
+  background: rgba(63, 169, 255, 0.35);
+  color: #fff;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-circuit); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neon-600); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+.text-glow {
+  text-shadow: 0 0 12px rgba(63, 169, 255, 0.65), 0 0 32px rgba(63, 169, 255, 0.25);
+}
+
+.text-glow-pulse {
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+}
+
+/* Ambient HUD grid, used once behind the whole app shell */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(63, 169, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 169, 255, 0.055) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+/* HUD-plate chamfered corners, used on cards / buttons instead of rounded-xl */
+.chamfer {
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+.chamfer-sm {
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-panel-light) 85%, transparent), color-mix(in srgb, var(--color-ink) 85%, transparent));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(63, 169, 255, 0.14);
+}
+
+.legendary-shimmer {
+  background: linear-gradient(110deg, #3fa9ff, #b06bff, #00e5ff, #3fa9ff);
+  background-size: 240% 100%;
+  animation: shimmer 3.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
