@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{uid} {
+      // Profiles and stats are public — that's what powers the leaderboard.
+      allow read: if true;
+
+      // A player may only ever create their OWN doc, and can never grant
+      // themselves admin or clear a ban at signup.
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.isAdmin == false
+        && request.resource.data.banned == false;
+
+      // Self-updates are limited to gameplay fields, and any totalTaps
+      // change must be a bounded, non-negative increment — this is the
+      // backstop against a modified or forged client request. Larger
+      // negative adjustments (match losses) go through a transaction in
+      // userService that clamps at 0, which this rule still allows since
+      // it only caps the growth direction, not decreases.
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'username', 'countryCode', 'totalTaps', 'highestTPS',
+          'wins', 'losses', 'matchesPlayed', 'lastActive',
+          'flagReasons', 'suspicionScore', 'suspicious'
+        ])
+        && (
+          request.resource.data.totalTaps <= resource.data.totalTaps
+          || request.resource.data.totalTaps - resource.data.totalTaps <= 200
+        );
+
+      // Admins can moderate any account (ban, dismiss flags, reset taps).
+      allow update: if isAdmin();
+      allow delete: if isOwner(uid) || isAdmin();
+
+      match /matchHistory/{matchId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
